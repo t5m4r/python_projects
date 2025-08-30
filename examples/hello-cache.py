@@ -1,7 +1,7 @@
 import diskcache as dc
 cache = dc.Cache('tushar-ai-cache')
 
-
+#These are example words / strings
 nuggets = ['Washing Machine', 'Tolstoy', 'Hitchiking']
 
 # STICKING THINGS IN (OR SAVING TO DISK)
