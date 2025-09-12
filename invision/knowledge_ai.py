@@ -13,7 +13,7 @@ heading = t.Label(base, text="Research Bot", font = ('Sans',30))
 heading.grid(row = 0,column= 4)
 inpt = t.Entry(base, text = 'Enter Question')
 inpt.grid(row=3,column=4)
-lbl = t.Text(base,font = ('Sans',15),wrap = 'word')
+lbl = t.Text(base,font = ('Sans',8),wrap = 'word')
 lbl.grid(row=6,column=4)
 year = today.year
 topic = ''
@@ -53,111 +53,50 @@ def search_by(filter):
                 print('____________________________________________')
                 print(data)
     restart()
-def start():
-    today = date.today()
-    year = today.year
-    month = today.month
-    if len(str(month)) == 1: month = f'0{month}'
-    day = today.day
-    value = f"{day}/{month}/{year}"
-    num_results = 3
-    choice = input("Select filter option (Date,Content,Question) ")
-    if choice.lower() == 'date'or choice.lower() ==  'by date':
-        search_by('date')
-    elif choice.lower() == 'content' or choice.lower() ==  'by content':
-        search_by('content')
-    elif choice.lower() == 'question':
-        topic = input ("ENTER QUESTION: ").lower()
-        print()
-        key = (topic)
-        print(key)
-        if key in cache:
-            print("In cache")
-            print(cache[key])
-        else:
-            print("Not in cache")
-            print("Starting Google search for your question...")
-            found_any = False
-            for count, search2 in enumerate(search(f'{topic}', num_results=num_results, unique='true')):
-                print(f"Processing search result {count+1}: {search2}")
-                try:
-                    page = requests.get(search2)
-                    if page.status_code != 200:
-                        print(f"Failed to retrieve page: {search2} ")
-                        num_results += 1
-                        continue
-                    print("Data retrieved successfully.")
-                    soup = BeautifulSoup(page.text, 'html.parser')
-                    paragraphs = soup.find_all("p")
-                    if not paragraphs:
-                        print("No paragraphs found on this page.")
-                    else:
-                        found_any = True
-                        for p in paragraphs:
-                            p = p.get_text()
-                            print(p)
-                            value = f'{value}: {p}'
-                        re_send = input('Expand? (Y) or (N)')
-                        if re_send.lower() == 'y':
-                            paragraphs = soup.find_all("p")[0:5]
-                            print(search2)
-                            for p in paragraphs:
-                                p = (p.get_text())
-                                print(p)
-                            value = f"{value}: /n {paragraphs[0:10]}"
-                    print("")
-                    print("___________________________________________________________________________")
-                    print("")
-                except Exception:
-                    print(f"Error fetching {search2}")
-            if not found_any:
-                print("No useful information found from search results.")
-                print("Wikipedia - ")
-                value = wikipedia.summary(topic)
-                print(value)
-            cache[key] = value
-            restart()
-    else: print("INVALID OPTION")
+#re_send = ''
+#def yes():
+    #re_send = 'yes'
+#def no():
+    #re_send = 'no'
+#expand = t.Button(base , text = 'Expand',command = yes)
+#n_expand = t.Button(base,text = 'Next Search',command = no)
 def conduct_search():
-   topic = inpt.get().lower()
-   num_results = 3
-   key = topic
-   value = f"{day}/{month}/{year}"
-   num_results = 3
-   try: 
-    for search2 in search(topic,num_results = num_results,unique='true'):
+    topic = inpt.get()
+    num_results = 3
+    key = topic
+    results = []
+    try:
+        for search2 in search(topic, num_results=3, unique='true'):
             page = requests.get(search2)
-            if page != 200:
-                num_results +=1
-            else:
-                print("Data retrieved")
-                print(search2) 
-            soup = BeautifulSoup(page.text, 'html.parser')
-            paragraphs = soup.find_all("p")[0:7]
-            for p in paragraphs:
-                p = p.get_text()
-                print(p)
-                value = f"""{value}: 
-                {p}"""
-            #re_send = input('Expand? (Y) or (N)')
-            #if re_send.lower() == 'y':
-                #paragraphs = soup.find_all("p")[0:5]
+            lbl.config(text='Searching...')
+            if page.status_code != 200:
+                num_results += 1
+                continue
+            print("Data retrieved")
             print(search2)
-            #for p in paragraphs:
-                #p = p.get_text()
-                #print(p)
-            #value = f'{value}: {paragraphs[0:10]}'
+            soup = BeautifulSoup(page.text, 'html.parser')
+            paragraphs = soup.find_all("p")[0:3]
+            for p in paragraphs:
+                p_text = p.get_text()
+                print(p_text)
+                results.append(p_text)
+            print(search2)
             print("")
             print("___________________________________________________________________________")
             print("")
-   except Exception:
-    print('Failed to retireve data')
-    print("Wikipedia - ")
-    value = wikipedia.summary(topic)
-   lbl.delete(1.0,t.END)
-   lbl.insert(1.0,value)
-   cache[key] = value
-   return(value)
+        if results:
+            value = f"{day}/{month}/{year} : {value}:\n" + "\n".join(results)
+        else:
+            print('Failed to retrieve data')
+            print("Wikipedia - ")
+            value = f"{day}/{month}/{year} : {wikipedia.summary(topic)} : From Wikepedia"
+    except Exception:
+        print('Failed to retrieve data')
+        print("Wikipedia - ")
+        value = wikipedia.summary(topic)
+    lbl.delete(1.0, t.END)
+    lbl.insert(1.0, value)
+    cache[key] = value
 sumbit = t.Button(base, text = 'Search', command = conduct_search)
 sumbit.grid(row = 4,column = 4)
 base.mainloop()
