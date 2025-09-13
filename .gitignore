@@ -1,3 +1,6 @@
 tushar_ai/cache.db
 tushar_ai/cache.db-shm
 tushar_ai/cache.db-wal
+cache/
+tushar_ai_2/
+output.html
